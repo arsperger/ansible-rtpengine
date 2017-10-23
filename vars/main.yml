@@ -1,0 +1,6 @@
+HostLocalIP: ""
+HostPublicIP: ""
+version: "mr5.5"
+nglisten_port: "2223"
+rtp_port_start: "10000"
+rtp_port_end: "20000"

@@ -1,0 +1,87 @@
+- hosts: voip
+  tasks:
+  - name: 'get vars'
+    include_vars: "main.yml"
+  - name:
+    apt:
+      update_cache: yes
+      upgrade: dist
+  - name: 'Install Prerequisites rtpengine packages'
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: present
+    with_items:
+      - 'git'
+      - 'gcc'
+      - 'flex'
+      - 'bison' 
+      - 'libmysqlclient-dev' 
+      - 'make' 
+      - 'libssl-dev' 
+      - 'libcurl4-openssl-dev'
+      - 'libxml2-dev' 
+      - 'libpcre3-dev' 
+      - 'unixodbc-dev' 
+      - 'vim' 
+      - 'libunistring-dev' 
+      - 'debhelper' 
+      - 'iptables-dev' 
+      - 'libcurl4-openssl-dev'
+      - 'libpcre3-dev' 
+      - 'libxmlrpc-core-c3-dev' 
+      - 'markdown' 
+      - 'libglib2.0-dev' 
+      - 'libhiredis-dev' 
+      - 'dkms' 
+      - 'libevent-dev'
+      - 'libavcodec-dev' 
+      - 'libavfilter-dev' 
+      - 'libavformat-dev' 
+      - 'libavresample-dev' 
+      - 'libavutil-dev' 
+      - 'libjson-glib-dev' 
+      - 'libpcap0.8-dev'
+      - 'libbencode-perl' 
+      - 'libcrypt-rijndael-perl'
+      - 'libdigest-hmac-perl'
+      - 'libio-socket-inet6-perl'
+      - 'libsocket6-perl'
+      - 'keyutils' 
+      - 'liblocale-gettext-perl'
+      - 'libnfsidmap2' 
+      - 'libtext-charwidth-perl' 
+      - 'libtext-wrapi18n-perl' 
+      - 'libtirpc1' 
+      - 'module-assistant' 
+      - 'nfs-common' 
+      - 'rpcbind'
+  - name: 'Git clone rtpengine'
+    git: 
+      repo: https://github.com/sipwise/rtpengine.git
+      dest: /usr/local/src/rtpengine
+      clone: yes
+      version: "{{ version }}"
+  - name: 'Generate build config files'
+    shell: "{{ item }}"
+    with_items: 
+      - "cd /usr/local/src/rtpengine && ./debian/flavors/no_ngcp && dpkg-buildpackage" 
+      - "cd /usr/local/src/ && dpkg -i *.deb"
+  - name: 'Updating rtpengine default file'
+    lineinfile: 
+      dest: /etc/default/ngcp-rtpengine-daemon
+      backrefs: yes
+      regexp: "^RUN_RTPENGINE=no"
+      line: "RUN_RTPENGINE=yes"
+  - name: 'Copy rtpengine config file to /etc/rtpengine'
+    template: 
+      src: templates/rtpengine/rtpengine.j2 
+      dest: /etc/rtpengine/rtpengine.conf
+    notify: 
+    - restart rtpengine 
+
+  handlers:
+    - name: 'restart rtpengine'
+      service: name=ngcp-rtpengine-daemon state=restarted
+
+#DONE rtpengine

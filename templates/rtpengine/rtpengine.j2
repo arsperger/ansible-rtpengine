@@ -1,0 +1,12 @@
+[rtpengine]
+table = 0
+interface = {{HostLocalIP}}!{{HostPublicIP}}
+listen-ng = 127.0.0.1:{{nglisten_port}}
+timeout = 60
+silent-timeout = 3600
+tos = 184
+port-min = {{rtp_port_start}}
+port-max = {{rtp_port_end}}
+log-level = 6
+log-stderr = false
+log-facility = local0
