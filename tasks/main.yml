@@ -1,0 +1,14 @@
+---
+# tasks file for rtpengine
+
+- name: 'rtpengine Debian 10 setup'
+  import_tasks: debian.yml
+  when: ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution_major_version'] == "10"
+
+- name: 'deploy rtpengine config'
+  template:
+    src: rtpengine.j2
+    dest: /etc/rtpengine/rtpengine.conf
+    mode: 0644
+  notify:
+    - restart rtpengine

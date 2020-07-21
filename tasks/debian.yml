@@ -1,0 +1,51 @@
+---
+- name: 'Install Prerequisites rtpengine packages'
+  apt:
+    name: "{{ required_packages }}"
+    update_cache: yes
+    state: present
+  register: requirements_install_result
+  until: requirements_install_result is success
+  retries: 2
+  delay: 2
+
+- name: 'Download rtpengine'
+  get_url:
+    url: https://github.com/sipwise/rtpengine/archive/{{ rtpengine_version }}.tar.gz
+    dest: /usr/local/src/
+
+- name: 'Copy pre-built libbcg729 packages'
+  copy:
+    src: "{{ item }}"
+    dest: /tmp
+  loop:
+    - "libbcg729-0_1.0.4-0osso3+deb9_amd64.deb"
+    - "libbcg729-0-dbg_1.0.4-0osso3+deb9_amd64.deb"
+    - "libbcg729-dev_1.0.4-0osso3+deb9_amd64.deb"
+
+- name: Install a .deb package from the internet.
+  apt:
+    deb: "{{ item }}"
+  loop:
+    - "/tmp/libbcg729-0_1.0.4-0osso3+deb9_amd64.deb"
+    - "/tmp/libbcg729-0-dbg_1.0.4-0osso3+deb9_amd64.deb"
+    - "/tmp/libbcg729-dev_1.0.4-0osso3+deb9_amd64.deb"
+
+- name: 'Unarchive a file that is already on the remote machine'
+  unarchive:
+    src: /usr/local/src/rtpengine-{{ rtpengine_version }}.tar.gz
+    dest: /usr/local/src
+    remote_src: yes
+
+- name: 'Generate build config files'
+  shell: "{{ item }}"
+  loop:
+    - "cd /usr/local/src/rtpengine-{{ rtpengine_version }} && dpkg-buildpackage -us -uc -sa"
+    - "cd /usr/local/src/ && dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpengine-kernel-dkms_*.deb"
+
+- name: 'Updating rtpengine default file'
+  lineinfile:
+    dest: /etc/default/ngcp-rtpengine-daemon
+    backrefs: yes
+    regexp: "^RUN_RTPENGINE=no"
+    line: "RUN_RTPENGINE=yes"

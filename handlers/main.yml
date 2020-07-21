@@ -1,0 +1,8 @@
+---
+# handlers file for rtpengine
+
+- name: 'restart rtpengine'
+  service: 
+    name: ngcp-rtpengine-daemon
+    enabled: yes
+    state: restarted

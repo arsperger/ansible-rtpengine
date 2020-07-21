@@ -1,0 +1,12 @@
+# rtpengine conf vars
+
+host_local_ip: "192.168.1.75"
+host_pub_ip: "192.168.1.75"
+ng_listen_host: "192.168.1.75"
+ng_listen_port: "2222"
+rtp_port_start: "10000"
+rtp_port_end: "20000"
+
+# rtpengine pkg
+ 
+rtpengine_version: "mr8.4.1.3"
